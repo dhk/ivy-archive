@@ -1,59 +1,159 @@
-# ivy-archive
+# Ivy — The Archive
 
-Ivy is a Git-backed, markdown-first knowledge archive.
-This repo is the public engine/spec/templates project.
+## One-line
+A structured, repo-backed system for capturing and reusing thinking.
 
-## Design goals
+## Short version
+Ivy turns conversations, decisions, and ideas into durable, structured assets that can be reused across time, tools, and collaborators.
 
-- Durable storage in plain text
-- Deterministic capture and review patterns
-- Low-friction authoring with strict parseability
-- Explicit privacy and lifecycle controls
-- Machine-usable metadata with human-readable files
+It is designed so that:
+- your thinking is not locked inside any AI tool
+- your thinking is kept private and under your control
+- your work is portable across models and interfaces
+- others can build on what you’ve already figured out
 
-## Canonical object folders
+---
 
-- `snapshots/`
-- `concepts/`
-- `artifacts/`
-- `maps/`
+# What Ivy is
 
-Visibility is metadata in frontmatter, not a directory decision.
+Ivy is a structured memory system for reasoning.
 
-## Workflow folders
+It captures:
+- what you were trying to do
+- what mattered
+- what you decided
+- what can be reused
 
-- `inbox/raw/`: unprocessed material
-- `inbox/to-process/`: normalized candidates awaiting canonicalization
-- `public/approved/`: publication derivatives
-- `private/`, `sensitive/`: quarantine or restricted non-canonical material
+It stores this in:
+- plain markdown
+- inside a Git repo
+- with consistent structure
 
-## Core commands
+---
 
-```bash
-python3 scripts/validate.py
-python3 scripts/build_registry.py
-```
+# Why Ivy exists
 
-## Public + private setup
+Most valuable thinking is lost.
 
-Use this repo as public infrastructure and keep personal notes in a private content repo.
+- AI conversations disappear into chat logs
+- Decisions are made but not recorded
+- Prompts and frameworks are reinvented repeatedly
+- Insights are tied to specific tools and sessions
 
-- Public repo (this one): docs, templates, scripts, examples
-- Private repo: canonical objects (`snapshots/`, `concepts/`, `artifacts/`, `maps/`)
+Raw transcripts are not enough:
+- too long
+- too noisy
+- not reusable
 
-Run scripts against private content by setting `IVY_CONTENT_ROOT`:
+Ivy exists to solve this:
 
-```bash
-IVY_CONTENT_ROOT=/Users/dhk/Documents/dev/ivy-archive-private python3 scripts/validate.py
-IVY_CONTENT_ROOT=/Users/dhk/Documents/dev/ivy-archive-private python3 scripts/build_registry.py
-```
+Turn ephemeral thinking into durable leverage.
 
-## Registry outputs
+---
 
-Generated CSV files are written to `registry/`:
+# The key unlock
 
-- `registry/snapshots.csv`
-- `registry/concepts.csv`
-- `registry/artifacts.csv`
-- `registry/maps.csv`
-- `registry/edges.csv`
+AI increases the volume of thinking, but fragments it across:
+- tools (ChatGPT, Claude, Gemini, etc.)
+- interfaces (chat, IDEs, notebooks)
+- sessions
+
+Ivy makes thinking:
+
+## Portable
+Your thinking lives in your repo, not inside any AI system.
+
+## Composable
+Snapshots become building blocks.
+
+## Collaborative
+Others can extend and build on your thinking.
+
+AI doesn’t just amplify individuals — it amplifies shared thinking.
+
+---
+
+# Core idea
+
+The central unit of Ivy is the snapshot:
+
+A structured record of a single unit of thinking.
+
+Everything builds from this.
+
+---
+
+# Design goals
+
+- Reuse over storage
+- Structure over volume
+- Determinism over cleverness
+- Human-readable first
+- Tool independence
+- Collaboration-ready
+- Private by default
+
+---
+
+# What Ivy stores
+
+## Snapshots
+Structured records of sessions.
+
+## Artifacts
+Reusable outputs.
+
+## Concepts
+Durable ideas.
+
+## Maps
+Curated navigation.
+
+---
+
+# What good looks like
+
+- clear, structured snapshots
+- explicit decisions
+- reusable artifacts
+- minimal duplication
+- consistent metadata
+- strong privacy boundaries
+
+---
+
+# What Ivy is not
+
+- not a transcript dump
+- not a note app
+- not a passive archive
+
+It is an active system for reuse.
+
+---
+
+# Philosophy
+
+The most valuable output of thinking is not the answer —
+it is the structure of how the answer was reached.
+
+That structure can be reused.
+
+---
+
+# Summary
+
+Ivy is:
+- portable thinking
+- reusable reasoning
+- collaborative knowledge
+
+Over time, it becomes a compounding system.
+
+---
+
+# Next steps
+
+- Read: docs/how-to-use-ivy.md
+- Read: docs/contributor-guide.md
+- Start capturing snapshots
