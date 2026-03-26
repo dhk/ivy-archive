@@ -9,6 +9,18 @@ Recommended deployment is two repos:
 
 Tooling can target private content using `IVY_CONTENT_ROOT`.
 
+## Non-negotiable rules (v1)
+
+1. Canonical-home rule
+Every canonical object has exactly one home in `snapshots/`, `concepts/`, `artifacts/`, or `maps/`.
+
+2. Metadata-over-folder rule
+Visibility is metadata in frontmatter (`visibility`), never encoded by canonical storage path.
+
+3. Infrastructure-vs-content rule
+Infrastructure lives in `docs/`, `protocols/`, `templates/`, and `scripts/`.
+Archive content lives in `snapshots/`, `concepts/`, `maps/`, and `artifacts/`.
+
 ## Canonical storage policy
 
 Canonical objects live only in object folders:

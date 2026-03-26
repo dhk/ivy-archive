@@ -156,4 +156,5 @@ Over time, it becomes a compounding system.
 
 - Read: docs/how-to-use-ivy.md
 - Read: docs/contributor-guide.md
+- Read: docs/ivy-design.md
 - Start capturing snapshots

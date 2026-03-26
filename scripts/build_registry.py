@@ -23,7 +23,18 @@ def ensure_registry_dir():
 
 
 def write_registry(path, rows):
-    fields = ["id", "date", "title", "type", "topics", "projects", "visibility", "lifecycle_state", "updated_at", "path"]
+    fields = [
+        "id",
+        "date",
+        "title",
+        "type",
+        "topics",
+        "projects",
+        "visibility",
+        "lifecycle_state",
+        "updated_at",
+        "path",
+    ]
     with open(path, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fields)
         writer.writeheader()
@@ -58,20 +69,37 @@ def main():
         buckets[folder].append(row)
 
         source_id = fm.get("id", "")
-        for ref_key in ["related_snapshots", "related_concepts", "related_artifacts", "derived_from", "produced"]:
+        for ref_key in [
+            "related_snapshots",
+            "related_concepts",
+            "related_artifacts",
+            "derived_from",
+            "produced",
+        ]:
             refs = fm.get(ref_key, [])
             if isinstance(refs, list):
                 for target in refs:
-                    edges.append({"source_id": source_id, "relation": ref_key, "target_id": target, "source_path": relpath(path)})
+                    edges.append(
+                        {
+                            "source_id": source_id,
+                            "relation": ref_key,
+                            "target_id": target,
+                            "source_path": relpath(path),
+                        }
+                    )
 
     for folder, rows in buckets.items():
         write_registry(os.path.join(registry_dir, f"{folder}.csv"), rows)
 
     edges_path = os.path.join(registry_dir, "edges.csv")
     with open(edges_path, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=["source_id", "relation", "target_id", "source_path"])
+        writer = csv.DictWriter(
+            f, fieldnames=["source_id", "relation", "target_id", "source_path"]
+        )
         writer.writeheader()
-        for row in sorted(edges, key=lambda r: (r["source_id"], r["relation"], r["target_id"])):
+        for row in sorted(
+            edges, key=lambda r: (r["source_id"], r["relation"], r["target_id"])
+        ):
             writer.writerow(row)
 
     print("Registry rebuilt:")

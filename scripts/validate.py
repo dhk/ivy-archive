@@ -3,7 +3,7 @@ import os
 import sys
 
 from ivy_lib import (
-    ROOT,
+    CANONICAL_DIRS,
     CONTENT_ROOT,
     VISIBILITY,
     LIFECYCLE,
@@ -25,6 +25,15 @@ from ivy_lib import (
 
 def relpath(p):
     return os.path.relpath(p, CONTENT_ROOT)
+
+
+NON_CANONICAL_VISIBILITY_DIRS = {"private", "sensitive", "public"}
+OBJECT_ID_PREFIX_TO_FOLDER = {
+    "snap-": "snapshots",
+    "concept-": "concepts",
+    "artifact-": "artifacts",
+    "map-": "maps",
+}
 
 
 def validate_snapshot_filename(path, errors):
@@ -52,15 +61,57 @@ def validate_sections(path, body, errors):
             errors.append(f"{relpath(path)}: heading '{heading}' must appear exactly once")
 
 
+def infer_folder_from_id(object_id):
+    for prefix, folder in OBJECT_ID_PREFIX_TO_FOLDER.items():
+        if object_id.startswith(prefix):
+            return folder
+    return None
+
+
+def check_content_outside_canonical(errors):
+    """Canonical-home and metadata-over-folder checks for out-of-place objects."""
+    for dirpath, _, filenames in os.walk(CONTENT_ROOT):
+        # Skip git internals.
+        if os.path.relpath(dirpath, CONTENT_ROOT).split(os.sep)[0] == ".git":
+            continue
+        for name in filenames:
+            if not name.endswith(".md"):
+                continue
+            path = os.path.join(dirpath, name)
+            top = relpath(path).split(os.sep)[0]
+            if top in CANONICAL_DIRS:
+                continue
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    text = f.read()
+                fm, _ = parse_frontmatter(text)
+            except Exception:
+                continue
+            object_id = fm.get("id")
+            if not object_id:
+                continue
+            expected = infer_folder_from_id(object_id)
+            if expected:
+                errors.append(
+                    f"{relpath(path)}: canonical object '{object_id}' must live under '{expected}/' (canonical-home rule)"
+                )
+
+
+def check_metadata_over_folder_rule(path, errors):
+    parts = set(relpath(path).split(os.sep))
+    if parts.intersection(NON_CANONICAL_VISIBILITY_DIRS):
+        errors.append(
+            f"{relpath(path)}: canonical object path must not encode visibility folders (metadata-over-folder rule)"
+        )
+
+
 def main():
     errors = []
     seen_ids = {}
     refs = []
 
+    check_content_outside_canonical(errors)
     files = find_canonical_files()
-    if not files:
-        print("No canonical markdown files found. Layout is valid.")
-        return 0
 
     for folder, path in files:
         try:
@@ -77,6 +128,7 @@ def main():
         if folder == "snapshots":
             validate_snapshot_filename(path, errors)
             validate_sections(path, body, errors)
+        check_metadata_over_folder_rule(path, errors)
 
         for key in ["topics", "projects", "people", "tags", "related_snapshots", "related_concepts", "related_artifacts", "derived_from", "produced"]:
             if key in fm:
@@ -129,6 +181,10 @@ def main():
         for err in errors:
             print(f"- {err}")
         return 1
+
+    if not files:
+        print("No canonical markdown files found. Layout is valid.")
+        return 0
 
     print(f"Validation passed for {len(files)} files.")
     return 0
