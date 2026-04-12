@@ -12,7 +12,7 @@ topics:
 projects:
   - ivy-the-archive
 created_at: 2026-04-12T15:45:00-07:00
-updated_at: 2026-04-12T15:45:00-07:00
+updated_at: 2026-04-12T16:00:00-07:00
 linked_ids:
   - snap-2026-03-26-ivy-system-context
   - snap-2026-04-12-ivy-context-streams
@@ -122,3 +122,5 @@ These are readable documents — not snapshots, but essential orientation:
 - Should `initiative` become a formal Ivy object type (ID prefix `init-`, validator support, own template)?
 - How should this map be updated as new snapshots are added — manually, or via a script that reads `edges.csv`?
 - When `ivy-archive-private` exists, do maps live there or in the public infrastructure repo?
+- **Synthesis snapshots**: as an initiative accumulates many snapshots, the most recent one can't carry all prior reasoning. A synthesis snapshot would compress a set of snapshots into a current-state record, archiving the originals. When does this become necessary, and what triggers it — snapshot count, initiative milestone, or handoff need?
+- **Single vs. two-repo model**: is `ivy-archive-private` actually necessary? The `visibility` field already governs what's sensitive. The two-repo split adds operational complexity. A single repo (public or private on GitHub) may be sufficient, with visibility metadata as the only privacy boundary.
