@@ -12,7 +12,7 @@ topics:
 projects:
   - ivy-the-archive
 created_at: 2026-04-12T15:45:00-07:00
-updated_at: 2026-04-12T16:30:00-07:00
+updated_at: 2026-04-12T17:00:00-07:00
 linked_ids:
   - snap-2026-03-26-ivy-system-context
   - snap-2026-04-12-ivy-context-streams
@@ -128,25 +128,29 @@ These are readable documents — not snapshots, but essential orientation:
 ---
 
 ### Path D — Claude Desktop with GitHub MCP (preferred)
-> You have Claude Desktop connected to GitHub via MCP. Claude can read the repo directly.
+> You have Claude Desktop connected to GitHub via MCP. Claude reads the repo directly and proves it's ready before you start.
 
-Use the session start prompt in `artifacts/artifact-ivy-session-start-prompt.md`.
-
-Short form — paste this to begin:
+Paste this to begin a session. Claude will follow the context graph and confirm readiness before asking what to do:
 
 ```
-I'm working on the Ivy Archive project. Repo: dhk/ivy-archive on GitHub.
+I'm starting a session on the Ivy Archive project. Repo: dhk/ivy-archive on GitHub.
 
-Please:
-1. Read maps/ivy-improvement-context.md
-2. Summarise: active initiative, last decisions made, open questions
-3. Tell me what branch to work on
-4. Ask me what I want to do today
+To orient yourself, follow the context graph:
+1. Read maps/ivy-improvement-context.md — this is the entry point
+2. Read each node it lists, in order
+3. Check registry/snapshots.csv for any objects with an updated_at newer than the map's updated_at — if any exist, read those too
+
+When you've finished assembling context, confirm you're ready by telling me:
+- Active initiative and its scope (one sentence)
+- Last decision made (one sentence)
+- Open questions still live (bullet list)
+- Current branch to work on
+- End with: "Spun up and ready."
+
+Don't ask me what to do yet. Just confirm you're ready first.
 ```
 
-Claude reads the map, orients itself, and asks for direction. No file pasting required.
-
-If the map feels stale, ask Claude to also check `registry/snapshots.csv` for objects newer than the map's `updated_at`.
+The confirmation is the validation — if it's wrong or thin, the tool didn't load context correctly. Full protocol in `artifacts/artifact-ivy-session-start-prompt.md`.
 
 ---
 
