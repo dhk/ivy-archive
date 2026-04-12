@@ -12,7 +12,7 @@ topics:
 projects:
   - ivy-the-archive
 created_at: 2026-04-12T15:45:00-07:00
-updated_at: 2026-04-12T17:00:00-07:00
+updated_at: 2026-04-12T17:30:00-07:00
 linked_ids:
   - snap-2026-03-26-ivy-system-context
   - snap-2026-04-12-ivy-context-streams
@@ -130,27 +130,38 @@ These are readable documents — not snapshots, but essential orientation:
 ### Path D — Claude Desktop with GitHub MCP (preferred)
 > You have Claude Desktop connected to GitHub via MCP. Claude reads the repo directly and proves it's ready before you start.
 
-Paste this to begin a session. Claude will follow the context graph and confirm readiness before asking what to do:
+Paste this to begin a session. The agent follows the context graph, finds the ready signal embedded in the repo, and proves orientation before you give it any work:
 
 ```
-I'm starting a session on the Ivy Archive project. Repo: dhk/ivy-archive on GitHub.
+You have GitHub MCP access. Connect to repo dhk/ivy-archive.
 
-To orient yourself, follow the context graph:
-1. Read maps/ivy-improvement-context.md — this is the entry point
+Follow the context graph:
+1. Read maps/ivy-improvement-context.md — start here
 2. Read each node it lists, in order
-3. Check registry/snapshots.csv for any objects with an updated_at newer than the map's updated_at — if any exist, read those too
+3. Check registry/snapshots.csv for objects with an updated_at newer than
+   the map's updated_at — read those too if any exist
 
-When you've finished assembling context, confirm you're ready by telling me:
-- Active initiative and its scope (one sentence)
+When done, confirm you're ready:
+- Active initiative and scope (one sentence)
 - Last decision made (one sentence)
 - Open questions still live (bullet list)
 - Current branch to work on
-- End with: "Spun up and ready."
+- End with the ready signal. You'll need to find it.
 
-Don't ask me what to do yet. Just confirm you're ready first.
+Don't ask what to do next. Just confirm.
 ```
 
-The confirmation is the validation — if it's wrong or thin, the tool didn't load context correctly. Full protocol in `artifacts/artifact-ivy-session-start-prompt.md`.
+The ready signal is encoded in the repo — the agent must read the map to discover it. If it comes back with the right phrase, orientation is proven. Full protocol in `artifacts/artifact-ivy-session-start-prompt.md`.
+
+---
+
+## Ready signal
+
+When you have completed orientation, end your confirmation with exactly:
+
+> "Ivy is live."
+
+This is the ready signal for this initiative. Do not use it until you have read this map and all listed nodes. Its presence in your confirmation proves you did.
 
 ---
 

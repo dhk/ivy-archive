@@ -40,21 +40,22 @@ Paste the prompt below at the start of any new Claude session with GitHub MCP co
 ## Prompt
 
 ```
-I'm starting a session on the Ivy Archive project. Repo: dhk/ivy-archive on GitHub.
+You have GitHub MCP access. Connect to repo dhk/ivy-archive.
 
-To orient yourself, follow the context graph:
-1. Read maps/ivy-improvement-context.md — this is the entry point
+Follow the context graph:
+1. Read maps/ivy-improvement-context.md — start here
 2. Read each node it lists, in order
-3. Check registry/snapshots.csv for any objects with an updated_at newer than the map's updated_at — if any exist, read those too
+3. Check registry/snapshots.csv for objects with an updated_at newer than
+   the map's updated_at — read those too if any exist
 
-When you've finished assembling context, confirm you're ready by telling me:
-- Active initiative and its scope (one sentence)
+When done, confirm you're ready:
+- Active initiative and scope (one sentence)
 - Last decision made (one sentence)
 - Open questions still live (bullet list)
 - Current branch to work on
-- End with: "Spun up and ready."
+- End with the ready signal. You'll need to find it.
 
-Don't ask me what to do yet. Just confirm you're ready first.
+Don't ask what to do next. Just confirm.
 ```
 
 ---
@@ -76,8 +77,10 @@ Open questions:
 
 Branch: main (no active work branch — ready to create one for new work).
 
-Spun up and ready.
+Ivy is live.
 ```
+
+The final line is the ready signal. It can only be found by reading the map. Its presence proves the agent completed orientation.
 
 ---
 
