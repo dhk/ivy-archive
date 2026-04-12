@@ -152,9 +152,39 @@ Over time, it becomes a compounding system.
 
 ---
 
-# Next steps
+# Getting started
 
-- Read: docs/how-to-use-ivy.md
-- Read: docs/contributor-guide.md
-- Read: docs/ivy-design.md
-- Start capturing snapshots
+**If you're new:** read `maps/ivy-improvement-context.md` — it's the context brief for this repo. It tells you what exists, in what order to read it, and how to orient quickly.
+
+**If you're building your own Ivy:** read `docs/ivy-design.md` (architecture) and `docs/spec.md` (schema rules), then use `templates/snapshot.md` to capture your first session.
+
+**Tooling:**
+
+```bash
+python3 scripts/validate.py       # validate all canonical objects
+python3 scripts/build_registry.py # regenerate registry CSVs
+```
+
+---
+
+# What's in this repo
+
+| Type | Count | Location |
+|---|---|---|
+| Snapshots | 3 | `snapshots/` |
+| Concepts | 1 | `concepts/` |
+| Maps | 1 | `maps/` |
+| Registry | auto-generated | `registry/` |
+
+See `registry/snapshots.csv` for the full index.
+
+---
+
+# Further reading
+
+- `docs/ivy-design.md` — architecture and design decisions (v1.2)
+- `docs/spec.md` — full specification
+- `docs/how-to-use-ivy.md` — 5-minute guide
+- `docs/contributor-guide.md` — how to contribute consistently
+- `docs/first-10-snapshots-playbook.md` — quality bar for early snapshots
+- `TODO.md` — known future work
