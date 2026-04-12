@@ -148,6 +148,26 @@ Each snapshot must include:
 - Open questions
 - Follow-up actions
 
+### Optional section: Links
+
+Include a `## Links` section when there are relevant external or internal references.
+
+Each link must be labeled:
+
+- `readable` — a document you can open and consume (spec, design doc, PR description, playbook, recording)
+- `reference` — a pointer for traceability only (ticket number, commit SHA, thread URL, PR number)
+
+Format:
+
+```markdown
+## Links
+
+- [readable] https://github.com/org/repo/blob/main/docs/spec.md — system specification
+- [reference] https://github.com/org/repo/pull/42 — PR that shipped this change
+- [reference] JIRA-1234 — originating ticket
+- [readable] docs/ivy-design.md — local design document
+```
+
 ---
 
 ## ID Rules

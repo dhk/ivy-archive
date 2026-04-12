@@ -1,5 +1,5 @@
 ---
-id: concept-example
+id: CONCEPT-SLUG
 title: Example concept
 date: 2026-03-25
 type: concept

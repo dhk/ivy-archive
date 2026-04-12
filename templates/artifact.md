@@ -1,5 +1,5 @@
 ---
-id: artifact-example
+id: ARTIFACT-SLUG
 title: Example artifact
 date: 2026-03-25
 type: artifact
