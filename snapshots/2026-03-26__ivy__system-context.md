@@ -23,7 +23,7 @@ produced: []
 confidence: high
 summary_status: complete
 created_at: 2026-03-26T08:26:36-07:00
-updated_at: 2026-04-12T14:00:00-07:00
+updated_at: 2026-04-12T14:30:00-07:00
 reviewed_at: 2026-04-12T14:00:00-07:00
 published_at: null
 ---
@@ -75,6 +75,27 @@ Tooling targets content via the `IVY_CONTENT_ROOT` environment variable.
 - **Two-repo separation**: Separate infrastructure (public, versioned tooling) from content (private, personal/team data). Bridge with an env var.
 - **Metadata-over-folder**: Encode classification in frontmatter fields, not directory paths. This keeps canonical storage simple and refactoring cheap.
 - **Registry-as-output**: Treat registries/indexes as derived outputs. Source of truth is the canonical files. Regenerate don't maintain.
+- **MCP-absent save pattern**: When an AI agent has no GitHub MCP integration, it cannot push directly. Offer these commands for the user to run manually — or optionally execute them via shell if permitted:
+
+  ```bash
+  # Stage and commit a new snapshot + registry update
+  git add snapshots/<filename>.md registry/snapshots.csv
+  git commit -m "Add snapshot: <title>"
+
+  # Push to the working branch
+  git push -u origin <branch-name>
+  ```
+
+  If the `gh` CLI is preferred (e.g. to open a PR immediately after):
+
+  ```bash
+  git add snapshots/<filename>.md registry/snapshots.csv
+  git commit -m "Add snapshot: <title>"
+  git push -u origin <branch-name>
+  gh pr create --title "<title>" --body "Adds snapshot <id>."
+  ```
+
+  Rule: always offer the commands explicitly so the user can copy-paste even if the agent cannot execute them.
 
 ## Artifacts created
 
