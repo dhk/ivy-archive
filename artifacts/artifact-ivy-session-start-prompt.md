@@ -11,7 +11,7 @@ topics:
 projects:
   - ivy-the-archive
 created_at: 2026-04-12T16:30:00-07:00
-updated_at: 2026-04-12T16:30:00-07:00
+updated_at: 2026-04-12T17:00:00-07:00
 source_snapshot: snap-2026-04-12-ivy-context-streams
 ---
 
@@ -19,41 +19,70 @@ source_snapshot: snap-2026-04-12-ivy-context-streams
 
 ## Purpose
 
-A reusable prompt for starting a new Claude session on the Ivy Archive project. Assumes Claude has GitHub MCP access to `dhk/ivy-archive` and can read files directly from the repo.
+A reusable entry protocol for starting a new session on the Ivy Archive project. Works as a "hello world" and a validation: the tool assembles context by following the links in the repo, then signals readiness with a structured confirmation. You can check the confirmation before trusting the tool to work.
 
 ## Usage
 
-Paste this at the start of a new Claude Desktop session (or any Claude session with GitHub MCP connected). Adjust the active task line to match what you're working on.
+Paste the prompt below at the start of any new Claude session with GitHub MCP connected to `dhk/ivy-archive`. No file pasting required — the tool reads the repo directly and follows the context graph.
 
 ## Inputs
 
 - GitHub MCP connected to `dhk/ivy-archive`
-- Optional: a specific task you want to work on
 
 ## Outputs
 
-- Claude oriented to the current state of the project
-- Summary of open questions and last decisions
-- Ready to work
+- Tool has read and assembled context from the repo
+- Structured readiness confirmation you can validate
+- Session ready to begin
 
 ---
 
 ## Prompt
 
 ```
-I'm working on the Ivy Archive project. Repo: dhk/ivy-archive on GitHub.
+I'm starting a session on the Ivy Archive project. Repo: dhk/ivy-archive on GitHub.
 
-Please:
-1. Read maps/ivy-improvement-context.md
-2. Summarise: active initiative, last decisions made, open questions
-3. Tell me what branch to work on
-4. Ask me what I want to do today
+To orient yourself, follow the context graph:
+1. Read maps/ivy-improvement-context.md — this is the entry point
+2. Read each node it lists, in order
+3. Check registry/snapshots.csv for any objects with an updated_at newer than the map's updated_at — if any exist, read those too
+
+When you've finished assembling context, confirm you're ready by telling me:
+- Active initiative and its scope (one sentence)
+- Last decision made (one sentence)
+- Open questions still live (bullet list)
+- Current branch to work on
+- End with: "Spun up and ready."
+
+Don't ask me what to do yet. Just confirm you're ready first.
+```
+
+---
+
+## What a good confirmation looks like
+
+```
+Active initiative: improving the Ivy Archive system — its design, schema,
+tooling, and working conventions. Runs as a single repo (dhk/ivy-archive).
+
+Last decision: adopted single-repo model; visibility frontmatter field is
+the sole privacy boundary, no ivy-archive-private needed.
+
+Open questions:
+- Should initiative become a formal object type?
+- How should the map be kept current as snapshots accumulate?
+- When do synthesis snapshots become necessary, and what triggers them?
+- What should the CI guard look like for public repos?
+
+Branch: main (no active work branch — ready to create one for new work).
+
+Spun up and ready.
 ```
 
 ---
 
 ## Notes
 
-- The map is the entry point. Claude reads it, orients itself, then asks for direction.
-- With GitHub MCP, Claude can read, commit, and push directly — no manual git commands needed unless MCP is unavailable (see the MCP-absent save pattern in `snap-2026-03-26-ivy-system-context`).
-- If the map is stale (new snapshots exist that aren't listed as nodes), tell Claude to check `registry/snapshots.csv` for anything newer than the map's `updated_at`.
+- The confirmation is the validation. If it's wrong or thin, the tool didn't load context properly — ask it to re-read before proceeding.
+- The protocol is self-guiding: the map tells the tool what to read, and each object's `related_snapshots` / `related_concepts` fields reinforce the graph. The tool should follow links, not just read what it's explicitly told.
+- With GitHub MCP, Claude can read, commit, and push directly. If MCP is unavailable, fall back to the git/gh CLI commands in the MCP-absent save pattern (`snap-2026-03-26-ivy-system-context`, Reusable patterns section).
