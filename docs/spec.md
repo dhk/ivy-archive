@@ -2,12 +2,11 @@
 
 ## Repo model
 
-Recommended deployment is two repos:
+Single repo. Infrastructure and content live together.
 
-- public repo: architecture docs, scripts, templates
-- private repo: canonical knowledge objects and sensitive notes
+`IVY_CONTENT_ROOT` is supported as an optional override if tooling needs to target a separate content directory, but the default is the repo root.
 
-Tooling can target private content using `IVY_CONTENT_ROOT`.
+The `visibility` frontmatter field is the sole privacy boundary. Structural separation into two repos is not required and adds unnecessary complexity for content that is primarily public-safe. If sensitive content accumulates, the repo can be split — all objects carry explicit visibility metadata making migration straightforward.
 
 ## Non-negotiable rules (v1)
 

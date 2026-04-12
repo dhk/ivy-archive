@@ -12,11 +12,12 @@ topics:
 projects:
   - ivy-the-archive
 created_at: 2026-04-12T15:45:00-07:00
-updated_at: 2026-04-12T16:00:00-07:00
+updated_at: 2026-04-12T16:15:00-07:00
 linked_ids:
   - snap-2026-03-26-ivy-system-context
   - snap-2026-04-12-ivy-context-streams
   - concept-initiative
+  - snap-2026-04-12-ivy-single-repo-decision
 ---
 
 # Ivy improvement — context brief
@@ -68,18 +69,26 @@ The session where the context streams gap in v1 was identified. Records the deci
 
 ---
 
+### [decision] Single-repo model
+**`snap-2026-04-12-ivy-single-repo-decision`**
+`snapshots/2026-04-12__ivy__single-repo-decision.md`
+
+Reversal of the v1 two-repo model. Ivy runs as a single repo. The `visibility` frontmatter field is the sole privacy boundary. Two-repo split deferred until sensitive content actually accumulates. Design docs updated to v1.2.
+
+---
+
 ### [infrastructure] Key files
 
 These are readable documents — not snapshots, but essential orientation:
 
 | Label | Path | What it is |
 |---|---|---|
-| readable | `docs/ivy-design.md` | Full system design, two-repo model, commands |
+| readable | `docs/ivy-design.md` | Full system design v1.2 — single-repo model, commands |
 | readable | `docs/spec.md` | v1 specification — schema, enums, lifecycle, registry |
 | readable | `protocols/snapshot-schema.md` | Snapshot schema with Links section convention |
 | readable | `protocols/validation-rules.md` | Validation levels and lifecycle transition rules |
 | readable | `docs/first-10-snapshots-playbook.md` | Quality bar for early snapshots |
-| reference | `scripts/validate.py` | Run with `IVY_CONTENT_ROOT` set |
+| reference | `scripts/validate.py` | Run from repo root; `IVY_CONTENT_ROOT` optional |
 | reference | `scripts/build_registry.py` | Regenerates all registry CSVs |
 
 ---
@@ -121,6 +130,6 @@ These are readable documents — not snapshots, but essential orientation:
 
 - Should `initiative` become a formal Ivy object type (ID prefix `init-`, validator support, own template)?
 - How should this map be updated as new snapshots are added — manually, or via a script that reads `edges.csv`?
-- When `ivy-archive-private` exists, do maps live there or in the public infrastructure repo?
+- ~~When `ivy-archive-private` exists, do maps live there or in the public infrastructure repo?~~ — **resolved**: no private repo; maps live in `ivy-archive`.
 - **Synthesis snapshots**: as an initiative accumulates many snapshots, the most recent one can't carry all prior reasoning. A synthesis snapshot would compress a set of snapshots into a current-state record, archiving the originals. When does this become necessary, and what triggers it — snapshot count, initiative milestone, or handoff need?
-- **Single vs. two-repo model**: is `ivy-archive-private` actually necessary? The `visibility` field already governs what's sensitive. The two-repo split adds operational complexity. A single repo (public or private on GitHub) may be sufficient, with visibility metadata as the only privacy boundary.
+- ~~**Single vs. two-repo model**~~ — **resolved**: single repo. `visibility` field is the sole privacy boundary. See `snap-2026-04-12-ivy-single-repo-decision`.
