@@ -1,2 +1,3 @@
 id,date,title,type,topics,projects,visibility,lifecycle_state,updated_at,path
 snap-2026-03-26-ivy-system-context,2026-03-26,Ivy Archive system design and context,planning-session,knowledge-management|repo-architecture|system-design,ivy-the-archive,public-safe,reviewed,2026-04-12T15:00:00-07:00,snapshots/2026-03-26__ivy__system-context.md
+snap-2026-04-12-ivy-context-streams,2026-04-12,Ivy context streams and the initiative concept,design-session,knowledge-management|context-management|system-design,ivy-the-archive,public-safe,draft,2026-04-12T15:30:00-07:00,snapshots/2026-04-12__ivy__context-streams.md

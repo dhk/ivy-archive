@@ -1,1 +1,5 @@
 source_id,relation,target_id,source_path
+concept-initiative,related_snapshots,snap-2026-04-12-ivy-context-streams,concepts/concept-initiative.md
+snap-2026-04-12-ivy-context-streams,derived_from,snap-2026-03-26-ivy-system-context,snapshots/2026-04-12__ivy__context-streams.md
+snap-2026-04-12-ivy-context-streams,related_concepts,concept-initiative,snapshots/2026-04-12__ivy__context-streams.md
+snap-2026-04-12-ivy-context-streams,related_snapshots,snap-2026-03-26-ivy-system-context,snapshots/2026-04-12__ivy__context-streams.md
