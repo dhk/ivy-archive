@@ -77,7 +77,7 @@ Open questions:
 
 Branch: main (no active work branch — ready to create one for new work).
 
-Ivy is live.
+"Knowledge is the ultimate weapon. It always has been." — Ivy, White Night by Jim Butcher
 ```
 
 The final line is the ready signal. It can only be found by reading the map. Its presence proves the agent completed orientation.
