@@ -45,3 +45,14 @@ published_at: null
 ## Open questions
 
 ## Follow-up actions
+
+## Links
+
+<!--
+List relevant URLs: repo, PR, ticket, doc, recording, etc.
+Label each as:
+  - readable  — document you can open and read (spec, design doc, playbook, PR description)
+  - reference — pointer for traceability (ticket number, commit SHA, thread URL)
+Format: - [label] <url-or-path> — description
+-->
+

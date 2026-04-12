@@ -23,7 +23,7 @@ produced: []
 confidence: high
 summary_status: complete
 created_at: 2026-03-26T08:26:36-07:00
-updated_at: 2026-04-12T14:30:00-07:00
+updated_at: 2026-04-12T15:00:00-07:00
 reviewed_at: 2026-04-12T14:00:00-07:00
 published_at: null
 ---
@@ -116,3 +116,15 @@ Tooling targets content via the `IVY_CONTENT_ROOT` environment variable.
 - Create `concept-context-snapshot` concept file defining the context snapshot pattern
 - Populate `registry/snapshots.csv` by running `build_registry.py`
 - Establish first 10 snapshots following the playbook in `docs/first-10-snapshots-playbook.md`
+
+## Links
+
+- [readable] https://github.com/dhk/ivy-archive — public infrastructure repo
+- [readable] docs/ivy-design.md — full system design document (two-repo model, principles, commands)
+- [readable] docs/spec.md — v1 specification (schema, enums, lifecycle rules, registry model)
+- [readable] protocols/snapshot-schema.md — snapshot schema with required fields, enums, and section rules
+- [readable] protocols/validation-rules.md — validation levels, checks, and lifecycle transition rules
+- [readable] docs/first-10-snapshots-playbook.md — guidance for establishing the first 10 snapshots
+- [readable] templates/snapshot.md — blank snapshot template
+- [reference] scripts/validate.py — validation script (run with IVY_CONTENT_ROOT set)
+- [reference] scripts/build_registry.py — registry generation script
