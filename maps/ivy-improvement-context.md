@@ -12,12 +12,13 @@ topics:
 projects:
   - ivy-the-archive
 created_at: 2026-04-12T15:45:00-07:00
-updated_at: 2026-04-12T16:15:00-07:00
+updated_at: 2026-04-12T16:30:00-07:00
 linked_ids:
   - snap-2026-03-26-ivy-system-context
   - snap-2026-04-12-ivy-context-streams
   - concept-initiative
   - snap-2026-04-12-ivy-single-repo-decision
+  - artifact-ivy-session-start-prompt
 ---
 
 # Ivy improvement — context brief
@@ -123,6 +124,29 @@ These are readable documents — not snapshots, but essential orientation:
 2. Give it the snapshots listed in Nodes (in order)
 3. State the active task explicitly — don't assume the new tool will infer it
 4. If the session produced new snapshots, add them to this map's Nodes before handing off
+
+---
+
+### Path D — Claude Desktop with GitHub MCP (preferred)
+> You have Claude Desktop connected to GitHub via MCP. Claude can read the repo directly.
+
+Use the session start prompt in `artifacts/artifact-ivy-session-start-prompt.md`.
+
+Short form — paste this to begin:
+
+```
+I'm working on the Ivy Archive project. Repo: dhk/ivy-archive on GitHub.
+
+Please:
+1. Read maps/ivy-improvement-context.md
+2. Summarise: active initiative, last decisions made, open questions
+3. Tell me what branch to work on
+4. Ask me what I want to do today
+```
+
+Claude reads the map, orients itself, and asks for direction. No file pasting required.
+
+If the map feels stale, ask Claude to also check `registry/snapshots.csv` for objects newer than the map's `updated_at`.
 
 ---
 

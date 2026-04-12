@@ -1,1 +1,2 @@
 id,date,title,type,topics,projects,visibility,lifecycle_state,updated_at,path
+artifact-ivy-session-start-prompt,2026-04-12,Ivy session start prompt,artifact,knowledge-management|context-management,ivy-the-archive,public-safe,draft,2026-04-12T16:30:00-07:00,artifacts/artifact-ivy-session-start-prompt.md
