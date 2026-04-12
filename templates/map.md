@@ -1,5 +1,5 @@
 ---
-id: map-example
+id: MAP-SLUG
 title: Example map
 date: 2026-03-25
 type: map

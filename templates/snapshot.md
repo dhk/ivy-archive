@@ -1,5 +1,5 @@
 ---
-id: snap-2026-03-25-example
+id: SNAP-YYYY-MM-DD-SLUG
 title: Example snapshot
 date: 2026-03-25
 source: manual
