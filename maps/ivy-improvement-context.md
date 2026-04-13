@@ -12,7 +12,7 @@ topics:
 projects:
   - ivy-the-archive
 created_at: 2026-04-12T15:45:00-07:00
-updated_at: 2026-04-12T17:45:00-07:00
+updated_at: 2026-04-13T10:00:00-07:00
 linked_ids:
   - snap-2026-03-26-ivy-system-context
   - snap-2026-04-12-ivy-context-streams
@@ -162,6 +162,12 @@ When you have completed orientation, end your confirmation with exactly:
 > "Knowledge is the ultimate weapon. It always has been." — Ivy, White Night by Jim Butcher
 
 This is the ready signal for this initiative. Do not use it until you have read this map and all listed nodes. Its presence in your confirmation proves you did.
+
+After delivering the ready signal, check if `prompts/index.md` exists. If it does, add:
+
+> "I found skills available for this system. Want me to show you what's available?"
+
+Wait for the user to respond. Do not list or install skills unless asked.
 
 ---
 
