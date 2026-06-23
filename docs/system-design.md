@@ -1,7 +1,12 @@
 # Ivy Archive — System Design
 
-**Status:** Draft  
+**Status:** Draft (editor pass)  
 **Date:** 2026-06-20  
+**Author:** Dave Holmes-Kinsella · **Editor:** Claude
+
+> **Editorial convention:** review commentary is added inline as
+> `> **Editor:** …` blockquotes. The author's text is left intact; editor
+> notes only flag risks, suggest defaults, or mark gaps.
 
 ---
 
@@ -114,6 +119,15 @@ collected:   2026-06-20T18:45:00Z
 This is the answer to "how do I get back?" — every file in ivy-archive-private knows
 exactly where it came from and which repo/branch to return to.
 
+> **Editor:** The provenance header is the keystone of the whole design — it's
+> what makes "how do I get back?" deterministic instead of fuzzy. Two failure
+> modes to guard against in `collect`:
+> 1. **Double-prepend** — if a file is collected twice, check for an existing
+>    `<!-- ivy-provenance` block and *replace* it rather than prepending a second.
+> 2. **Staleness** — `git_remote`/`branch` are snapshotted at collect time; if the
+>    source repo's remote later changes, the header silently goes stale. Re-derive
+>    on each collect rather than trusting the prior value.
+
 ---
 
 ### 3. Remote Git Repo
@@ -210,6 +224,16 @@ Operates within `~/Documents/ivy-archive-private/`.
 - Provenance header updated: lists all source paths merged
 - Commit: `"ivy groom — merged N files across M repos"`
 
+> **Editor:** Grooming is the riskiest and least-specified mode — it's the one
+> that can silently lose or wrongly fuse data. Recommendations:
+> - **Merge only on exact `Branch:` + `repo_name` by default.** The `Description:`
+>   fuzzy-match (~80%) will eventually merge two genuinely different work streams
+>   that happened to summarize alike. Make fuzzy merge opt-in (`--aggressive`) or a
+>   confirmable *suggestion*, never automatic.
+> - **Be non-destructive.** Move merged originals to `.groom-archive/` instead of
+>   deleting, at least until the merge logic is trusted. Git history alone is not a
+>   friendly recovery path for an accidental bad merge.
+
 ### `push to ivy`
 
 Two destinations:
@@ -242,6 +266,11 @@ Mark a work stream complete.
 5. Commit + push to remote
 6. Add summary to NotebookLM (individual files stay — append-only)
 
+> **Editor:** There's no reopen path. Work that's "done" reliably comes back —
+> when it does, what moves the files out of `concluded/`? Without an `ivy unconclude
+> [repo]` (or at least a documented manual move-back), `concluded/` becomes a one-way
+> roach motel. Worth specifying even if it's just a manual procedure in v1.
+
 ### `ivy status` / sync status check
 
 Check whether the current session's context is current in ivy.
@@ -261,6 +290,12 @@ Two backends:
 - `grep -ril` across `ivy-archive-private/**/*.md`
 - Read provenance header from matches → extract repo_path, branch, source_path
 - Return navigation-ready answer
+
+> **Editor:** Keyword grep across all `.md` will get noisy fast, and the design
+> doesn't say how to rank. For the dominant "what was I working on?" case, bias hard
+> toward **recency**: sort matches by the `Generated:` field descending and return
+> the top 1–2, not every hit. The provenance header already carries the date — use
+> it as the tiebreaker so the freshest context surfaces first.
 
 **NotebookLM (`--nlm`):**
 - Semantic search via `mcp__notebooklm__notebook_query`
@@ -344,5 +379,16 @@ ivy conclude woven   ← generates summary, archives, pushes
 ## Open Questions
 
 - Should `ivy collect` run automatically after `sweep archive` (combined command)?
+  > **Editor:** Keep them separate, but add a `sweep --collect` convenience flag.
+  > Sweep is the cheap, frequent, end-of-session action; collect touches git and
+  > belongs to weekly maintenance. Auto-fusing means every sweep makes a commit and
+  > clutters history. A flag gives you both without coupling cadence.
 - Should captain's logs be groomed? (currently excluded from grooming, only swept by date)
+  > **Editor:** No — the instinct to exclude is right. Logs are append-only journal
+  > entries, not state snapshots; merging them destroys the chronology that makes
+  > them useful. Sweep by date, never groom.
 - First-run: should ivy create the GitHub repo via `gh repo create`, or require the user to create it manually?
+  > **Editor:** Offer it. Prompt `Create private GitHub repo 'ivy-archive-private'
+  > now? [y/N]` and run `gh repo create --private` on yes, else ask for an existing
+  > URL. Don't silently create (it's an outward-facing action), but don't force
+  > manual setup either.
