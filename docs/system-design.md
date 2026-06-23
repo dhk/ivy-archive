@@ -27,7 +27,7 @@ in a working session with full context restored.
                                   ↓
                            ivy sweep (stamp)
                                   ↓
-                           ivy collect → ~/Documents/ivy-archive-private/ (git repo)
+                           ivy collect → ~/Documents/dev/ivy-archive-private/ (git repo)
                                   ↓
                            ivy groom  → merge duplicates within git repo
                                   ↓
@@ -76,7 +76,7 @@ Description: [one-line summary, max 12 words]
 
 ### 2. Local Git Repo: ivy-archive-private
 
-**Location:** `~/Documents/ivy-archive-private/`
+**Location:** `~/Documents/dev/ivy-archive-private/`
 
 The central collection point. All context files from all repos are copied here,
 organized by repo name. This is a private git repo pushed to a GitHub remote.
@@ -134,7 +134,7 @@ exactly where it came from and which repo/branch to return to.
 
 **Location:** GitHub private repo (URL stored in `~/.claude/skills/ivy-archive/config`)
 
-Pushed from `~/Documents/ivy-archive-private/` via standard `git push`.
+Pushed from `~/Documents/dev/ivy-archive-private/` via standard `git push`.
 
 Purpose:
 - Durable off-machine backup
@@ -147,7 +147,7 @@ Purpose:
 
 **Notebook:** `ivy-archive-private` on notebooklm.google.com
 
-Files from `~/Documents/ivy-archive-private/` are added as sources. Because the
+Files from `~/Documents/dev/ivy-archive-private/` are added as sources. Because the
 provenance header is embedded in each file, NotebookLM queries can surface not just
 what the work was, but where to go to resume it.
 
@@ -203,14 +203,14 @@ repo names. The path is embedded in the file.
 
 ### `ivy collect`
 
-- Copy `.scratch` files and captain's logs into `~/Documents/ivy-archive-private/`
+- Copy `.scratch` files and captain's logs into `~/Documents/dev/ivy-archive-private/`
 - **Prepend provenance header** to each collected file
 - `git add -A && git commit -m "ivy collect — YYYY-MM-DD HH:MM PST"`
 - On first run: `git init`, prompt for GitHub remote URL, save to config
 
 ### `ivy groom`
 
-Operates within `~/Documents/ivy-archive-private/`.
+Operates within `~/Documents/dev/ivy-archive-private/`.
 
 **Duplicate detection** per repo subfolder:
 - Same `Branch:` field → merge
@@ -241,7 +241,7 @@ Two destinations:
 **A. Git remote:**
 
 ```bash
-git -C ~/Documents/ivy-archive-private push origin main
+git -C ~/Documents/dev/ivy-archive-private push origin main
 ```
 
 **B. NotebookLM:**
@@ -309,7 +309,7 @@ Two backends:
 `~/.claude/skills/ivy-archive/config`
 
 ```
-local_repo=~/Documents/ivy-archive-private
+local_repo=~/Documents/dev/ivy-archive-private
 remote_url=git@github.com:dhk/ivy-archive-private.git
 ```
 
