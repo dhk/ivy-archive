@@ -1,0 +1,6 @@
+# Copy to ~/.claude/skills/ivy-archive/config and adjust paths.
+# Read at the start of any mode that touches the git repo.
+local_repo=/Users/<you>/Documents/dev/ivy-archive-private
+remote_url=https://github.com/<you>/ivy-archive-private.git
+remote_branch=main
+collect_subdir=snapshots
