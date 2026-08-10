@@ -1,134 +1,37 @@
----
+# Validation rules
 
-# 2. protocols/validation-rules.md
+`scripts/validate.py` is the executable authority. This document describes what it currently enforces; do not add a rule here without implementing it in the validator.
 
-``` id="validation-rules-md"
-# Validation Rules
+The validator scans Markdown objects under `snapshots/`, `concepts/`, `artifacts/`, and `maps/` in the selected content root. It reports errors and exits non-zero when it finds:
 
-## Purpose
+- missing or malformed frontmatter;
+- missing required keys;
+- scalar values where supported relationship fields require arrays;
+- invalid IDs, snapshot filenames, dates, timestamps, or enums;
+- duplicate IDs across canonical object types;
+- missing or repeated required snapshot headings;
+- canonical objects outside their canonical home;
+- visibility encoded as a path segment;
+- unresolved object references.
 
-Ensure all Ivy files are:
-- consistent
-- parseable
-- complete
-- linkable
+It does not currently enforce lifecycle transitions, content quality, registry freshness, secret detection, or whether a visibility label is safe for a repository. Those checks remain review responsibilities.
 
-Validation should run:
-- locally (pre-commit)
-- in CI
+Run against the repository content:
 
----
+```bash
+python3 scripts/validate.py
+```
 
-# Validation levels
+Run the same public validator against a separate content root:
 
-## Errors (must fix)
-- invalid YAML
-- missing required fields
-- invalid enum values
-- duplicate IDs
-- missing required sections
-- invalid file location
+```bash
+IVY_CONTENT_ROOT=../private-content python3 scripts/validate.py
+```
 
-## Warnings (non-blocking)
-- empty sections
-- no related links
-- weak metadata
-- unused tags
+After validation succeeds, regenerate all registry projections:
 
----
+```bash
+python3 scripts/build_registry.py
+```
 
-# File-level checks
-
-- file must be .md
-- must be in correct directory:
-  - snapshots/
-  - concepts/
-  - artifacts/
-  - maps/
-
----
-
-# Frontmatter checks
-
-- valid YAML
-- all required keys present
-- correct types (arrays vs strings)
-- enums must match allowed values
-- id must match format
-- date must be YYYY-MM-DD
-- timestamps must be ISO8601
-
----
-
-# Structural checks (snapshots)
-
-Must contain:
-
-- ## Snapshot précis
-- ## Prompt / Trigger
-- ## Context
-- ## Key ideas
-- ## Decisions
-- ## Reusable patterns
-- ## Artifacts created
-- ## Open questions
-- ## Follow-up actions
-
----
-
-# ID validation
-
-- must start with snap-
-- must include valid date
-- must be unique across repo
-
----
-
-# Reference validation
-
-If present:
-- related_snapshots must exist
-- related_concepts must exist
-- related_artifacts must exist
-
----
-
-# Registry validation
-
-- every file appears once
-- path exists
-- no duplicate IDs
-
----
-
-# Lifecycle validation
-
-## Allowed transitions
-
-- draft → reviewed
-- reviewed → published
-- reviewed → archived
-- published → archived
-
-## Invalid
-
-- draft → published
-
----
-
-# Visibility validation
-
-- public-safe requires reviewed or published
-- sensitive should not be published
-
----
-
-# Philosophy
-
-Validation enforces:
-
-- consistency
-- reliability
-- automation-readiness
-
-Without validation, Ivy degrades into noise.
+Registry files are outputs, not validation authorities. They must be regenerated and reviewed after canonical content changes.

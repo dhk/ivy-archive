@@ -1,5 +1,7 @@
 # Contributor Guide
 
+For public-project security and private-data reports, see [`../SECURITY.md`](../SECURITY.md). No licence is currently granted; see the README before reusing project material.
+
 ## Purpose
 
 Ivy is designed for multiple collaborators.
@@ -104,3 +106,6 @@ Before committing:
 - decisions are explicit
 - reusable ideas extracted
 - visibility correct
+- no secrets, personal absolute paths, or private content
+- `python3 scripts/validate.py` passes
+- `python3 scripts/build_registry.py` has been run and its diff reviewed
