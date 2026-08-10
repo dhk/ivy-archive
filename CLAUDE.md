@@ -11,9 +11,12 @@ into any one AI tool. Full description: [README.md](README.md). Spec:
 1. **Canonical-home rule** — every canonical object has exactly one home
    in `snapshots/`, `concepts/`, `artifacts/`, or `maps/`.
 2. **Metadata-over-folder rule** — `visibility` is frontmatter metadata,
-   never encoded by which folder something lives in. This is the repo's
-   sole privacy boundary — check it before reading, quoting, or
-   forwarding content from `private/` or `sensitive/`.
+   never encoded by which folder something lives in. Note what `spec.md`
+   is explicit about: `visibility` classifies content, it is **not**
+   access control — repository permissions and safe remote selection are
+   the actual privacy boundary. Treat it as a label to respect when
+   quoting or forwarding, never as evidence that something is protected
+   (see [SECURITY.md](SECURITY.md)).
 3. **Infrastructure-vs-content rule** — infrastructure lives in `docs/`,
    `protocols/`, `templates/`, `scripts/`; everything else is content.
 
