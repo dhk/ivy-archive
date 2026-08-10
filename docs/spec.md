@@ -1,12 +1,12 @@
 # Ivy Specification (v1)
 
-## Repo model
+## Repository and authority model
 
-Single repo. Infrastructure and content live together.
+The public `ivy-archive` repository is the authority for the format and tooling. It contains schemas, protocols, templates, prompts, scripts, and architecture guidance. Its root is also the default content root and may contain public-safe canonical examples.
 
-`IVY_CONTENT_ROOT` is supported as an optional override if tooling needs to target a separate content directory, but the default is the repo root.
+`IVY_CONTENT_ROOT` may select a separate, access-controlled content repository. That repository owns its canonical objects and generated registries, but it does not duplicate or override the public schemas and tooling; it consumes a pinned public revision.
 
-The `visibility` frontmatter field is the sole privacy boundary. Structural separation into two repos is not required and adds unnecessary complexity for content that is primarily public-safe. If sensitive content accumulates, the repo can be split — all objects carry explicit visibility metadata making migration straightforward.
+The `visibility` frontmatter field classifies content and makes objects portable. It is not access control. Repository permissions and safe remote selection are the privacy boundary.
 
 ## Non-negotiable rules (v1)
 

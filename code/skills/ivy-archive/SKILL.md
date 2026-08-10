@@ -58,8 +58,8 @@ Read at the start of any mode that touches the git repo:
 `~/.claude/skills/ivy-archive/config`
 
 ```
-local_repo=/Users/dhk/Documents/dev/ivy-archive-private
-remote_url=https://github.com/dhk/ivy-archive-private.git
+local_repo=/path/to/private-content
+remote_url=https://github.com/<owner>/<private-content-repo>.git
 remote_branch=main
 collect_subdir=snapshots
 ```

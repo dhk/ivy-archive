@@ -1,334 +1,91 @@
-# Ivy Design
+# Ivy architecture
 
-Status: Draft v1.2
-
-## Purpose
-
-Ivy is a repo-backed knowledge archive for capturing, structuring, retrieving, and operationalizing conversations, decisions, artifacts, and durable concepts.
-
-This document reflects the implemented v1 architecture.
-
-## Executive summary
-
-Ivy converts ephemeral thinking into durable, structured markdown objects.
-
-Core object types:
-- Snapshots
-- Concepts
-- Artifacts
-- Maps
-
-The snapshot is the canonical unit of capture.
-
-## Core principles
-
-- Markdown-first canonical storage
-- Git-backed durability and version history
-- Snapshot-first capture model
-- Visibility controlled by metadata, not structure
-- Machine-usable metadata + human-readable docs
-
-## Non-negotiable rules (v1)
-
-1. Canonical-home rule
-Every canonical object has exactly one home in one object folder.
-
-2. Metadata-over-folder rule
-Visibility is encoded in frontmatter (`visibility`), not canonical path.
-
-3. Infrastructure-vs-content rule
-Infrastructure and content are separated to preserve clarity.
-
-## Repo model
-
-Ivy runs as a **single repo**.
-
-Infrastructure and content live together:
-
-```text
-ivy-archive/
-  README.md
-  docs/
-  protocols/
-  templates/
-  scripts/
-  inbox/
-    raw/
-    to-process/
-  snapshots/
-  concepts/
-  artifacts/
-  maps/
-  registry/
-```
-
-**Why single repo:** the `visibility` frontmatter field is the privacy boundary. Structural separation into two repos adds operational complexity (env vars, two remotes, sync discipline) without meaningful safety benefit for content that is primarily public-safe. The visibility field ensures every object has an explicit, auditable privacy classification.
-
-**Splitting later:** if sensitive content accumulates, the repo can be split. `IVY_CONTENT_ROOT` is still supported as an optional env var to point tooling at a separate content directory. All objects with `visibility: private` or `visibility: sensitive` can be migrated cleanly because visibility is metadata, not location.
-
-**CI guard (recommended):** a public repo should have a CI check that blocks push if any object has `visibility: private` or `visibility: sensitive`, as a safety net against accidental exposure.
-
-Note: `src/` is intentionally omitted in v1. It can be introduced later when a true packaged app/library boundary exists.
-
-## Snapshot schema (v1)
-
-Required frontmatter keys:
-- `id`
-- `title`
-- `date`
-- `source`
-- `type`
-- `visibility`
-- `lifecycle_state`
-- `topics`
-- `projects`
-- `created_at`
-- `updated_at`
-
-Required snapshot sections:
-- `## Snapshot precis`
-- `## Prompt / Trigger`
-- `## Context`
-- `## Key ideas`
-- `## Decisions`
-- `## Reusable patterns`
-- `## Artifacts created`
-- `## Open questions`
-- `## Follow-up actions`
-- `## Links` *(optional but recommended)*
-
-## Naming and IDs
-
-- Snapshot ID format: `snap-YYYY-MM-DD-short-slug`
-- Snapshot filename format: `YYYY-MM-DD__domain__slug.md`
-- IDs are globally unique across object types.
-
-Prefixes:
-- `snap-`
-- `concept-`
-- `artifact-`
-- `map-`
-
-## Visibility and lifecycle
-
-Visibility enum:
-- `private`
-- `sensitive`
-- `needs-review`
-- `public-safe`
-
-Lifecycle enum:
-- `draft`
-- `reviewed`
-- `published`
-- `archived`
-
-Disallowed transition:
-- `draft -> published`
-
-## Validation and registry behavior
-
-Validation enforces:
-- required keys
-- enum correctness
-- ID format and uniqueness
-- required snapshot sections
-- canonical-home rule
-- metadata-over-folder rule
-- resolvable object references
-
-Registry behavior:
-- canonical markdown files are source of truth
-- registry CSVs are generated and fully rewritten each run
-
-## Commands
-
-```bash
-python3 scripts/validate.py
-python3 scripts/build_registry.py
-```
-
-Optional override if running tooling against a separate content directory:
-
-```bash
-IVY_CONTENT_ROOT=/path/to/content python3 scripts/validate.py
-IVY_CONTENT_ROOT=/path/to/content python3 scripts/build_registry.py
-```
-
-## Conclusion
-
-Ivy v1 is a single-repo, markdown-first system with strict canonical storage, metadata-driven visibility, and automated validation/registry generation.
-
+Status: draft v1.3
 
 ## Purpose
 
-Ivy is a repo-backed knowledge archive for capturing, structuring, retrieving, and operationalizing conversations, decisions, artifacts, and durable concepts.
+Ivy separates a stable public format and toolchain from the knowledge stored in that format. This document is the architecture authority; field-level rules live in [`../protocols/snapshot-schema.md`](../protocols/snapshot-schema.md), and executable validation lives in `scripts/validate.py`.
 
-This document reflects the implemented v1 architecture.
+## Components and data flow
 
-## Executive summary
+```mermaid
+flowchart LR
+    subgraph Toolkit["Public tooling checkout"]
+        Contracts["Schemas and protocols"]
+        Templates["Templates and prompts"]
+        Validate["validate.py"]
+        Build["build_registry.py"]
+    end
 
-Ivy converts ephemeral thinking into durable, structured markdown objects.
+    subgraph Content["One selected content root"]
+        Objects["Snapshots, artifacts, concepts, maps"]
+        Registry["Generated registry CSVs"]
+    end
 
-Core object types:
-- Snapshots
-- Concepts
-- Artifacts
-- Maps
-
-The snapshot is the canonical unit of capture.
-
-## Core principles
-
-- Markdown-first canonical storage
-- Git-backed durability and version history
-- Snapshot-first capture model
-- Private-by-default workflow
-- Machine-usable metadata + human-readable docs
-
-## Non-negotiable rules (v1)
-
-1. Canonical-home rule
-Every canonical object has exactly one home in one object folder.
-
-2. Metadata-over-folder rule
-Visibility is encoded in frontmatter (`visibility`), not canonical path.
-
-3. Infrastructure-vs-content rule
-Infrastructure and content are separated to preserve clarity.
-
-## Repo model
-
-Ivy runs as two repos:
-
-- Public repo (`ivy-archive`): infrastructure
-  - `docs/`
-  - `protocols/`
-  - `templates/`
-  - `scripts/`
-- Private repo (`ivy-archive-private`): canonical content
-  - `snapshots/`
-  - `concepts/`
-  - `artifacts/`
-  - `maps/`
-
-Tooling in the public repo targets private content via:
-
-```bash
-IVY_CONTENT_ROOT=/Users/dhk/Documents/dev/ivy-archive-private
+    Templates --> Objects
+    Contracts --> Validate
+    Objects --> Validate
+    Objects --> Build --> Registry
+    Objects --> Consumers["People and agents"]
+    Registry --> Consumers
 ```
 
-## Public repo structure (infrastructure)
+The content root may be this public repository or a separate access-controlled repository. `IVY_CONTENT_ROOT` selects it at process start; without that variable, the tooling repository is the content root. `IVY_REGISTRY_ROOT` is an advanced override for registry output, but the normal and documented policy is to keep registries inside the selected content root.
+
+## Authority boundary
+
+The public repository owns:
+
+- object schemas, enums, naming, and lifecycle rules;
+- templates and prompts;
+- validation and registry-generation behavior;
+- architecture and contributor guidance.
+
+An optional private repository owns:
+
+- sensitive canonical objects;
+- the registries generated from those objects;
+- access policy, backups, and retention for that content.
+
+The private content repository must not become a parallel format authority. It should pin a reviewed public commit or tag and run that checkout's tools with `IVY_CONTENT_ROOT`. Local operational configuration may live privately, but schemas, validators, and generic prompts should be improved in public.
+
+## Storage invariants
+
+Each canonical object has exactly one home under `snapshots/`, `concepts/`, `artifacts/`, or `maps/`. Visibility is stored in frontmatter rather than encoded in folders. This makes objects portable, but it does not make a public repository safe for sensitive data: Git permissions and the selected remote provide access control.
+
+Markdown files are authoritative. Registry CSVs are disposable projections that are fully rewritten. Consumers may use registries for discovery but must resolve the canonical Markdown object for content.
+
+## Deployment shapes
+
+### Public-only
+
+The repository root is both toolkit and content root. This is appropriate only for public-safe content.
+
+### Public toolkit plus private content
 
 ```text
-ivy-archive/
-  README.md
-  docs/
-  protocols/
-  templates/
-  scripts/
-  inbox/
-  public/approved/
-  private/
-  sensitive/
-  registry/
+workspace/
+  ivy-tooling/       # public checkout pinned to a reviewed revision
+  private-content/   # access-controlled canonical content and registry
 ```
 
-Note: `src/` is intentionally omitted in v1. It can be introduced later when a true packaged app/library boundary exists.
-
-## Private repo structure (content)
-
-```text
-ivy-archive-private/
-  snapshots/
-  concepts/
-  artifacts/
-  maps/
-  inbox/raw/
-  inbox/to-process/
-  public/approved/
-  private/
-  sensitive/
-  registry/
-```
-
-## Snapshot schema (v1)
-
-Required frontmatter keys:
-- `id`
-- `title`
-- `date`
-- `source`
-- `type`
-- `visibility`
-- `lifecycle_state`
-- `topics`
-- `projects`
-- `created_at`
-- `updated_at`
-
-Required snapshot sections:
-- `## Snapshot precis`
-- `## Prompt / Trigger`
-- `## Context`
-- `## Key ideas`
-- `## Decisions`
-- `## Reusable patterns`
-- `## Artifacts created`
-- `## Open questions`
-- `## Follow-up actions`
-
-## Naming and IDs
-
-- Snapshot ID format: `snap-YYYY-MM-DD-short-slug`
-- Snapshot filename format: `YYYY-MM-DD__domain__slug.md`
-- IDs are globally unique across object types.
-
-Prefixes:
-- `snap-`
-- `concept-`
-- `artifact-`
-- `map-`
-
-## Visibility and lifecycle
-
-Visibility enum:
-- `private`
-- `sensitive`
-- `needs-review`
-- `public-safe`
-
-Lifecycle enum:
-- `draft`
-- `reviewed`
-- `published`
-- `archived`
-
-Disallowed transition:
-- `draft -> published`
-
-## Validation and registry behavior
-
-Validation enforces:
-- required keys
-- enum correctness
-- ID format and uniqueness
-- required snapshot sections
-- canonical-home rule
-- metadata-over-folder rule
-- resolvable object references
-
-Registry behavior:
-- canonical markdown files are source of truth
-- registry CSVs are generated and fully rewritten each run
-
-## Commands
+From `ivy-tooling/`:
 
 ```bash
-IVY_CONTENT_ROOT=/Users/dhk/Documents/dev/ivy-archive-private python3 scripts/validate.py
-IVY_CONTENT_ROOT=/Users/dhk/Documents/dev/ivy-archive-private python3 scripts/build_registry.py
+IVY_CONTENT_ROOT=../private-content python3 scripts/validate.py
+IVY_CONTENT_ROOT=../private-content python3 scripts/build_registry.py
 ```
 
-## Conclusion
+This is one format authority operating on a different content root, not two implementations.
 
-Ivy v1 is now defined as a two-repo, markdown-first system with strict canonical storage, metadata-driven visibility, and automated validation/registry generation.
+## Trust and failure model
+
+- Frontmatter visibility is classification metadata. It cannot prevent disclosure.
+- Validation catches structural errors, duplicate IDs, bad enums, misplaced objects, and unresolved references; it does not detect secrets or judge whether prose is safe to publish.
+- Registry generation overwrites derived CSVs. Review its diff and regenerate after every canonical content change.
+- Pinning the toolkit prevents an unreviewed schema change from unexpectedly changing a private archive.
+- Git history and an independent, access-controlled or encrypted backup provide recovery. A restoration test is part of backup maintenance.
+
+## Maturity
+
+The Markdown model, templates, validator, content-root override, and CSV builder are implemented. CI enforcement, packaging, automated migration, semantic search, and integrations are not part of the core v1 contract. There is no PyPI or npm distribution.
