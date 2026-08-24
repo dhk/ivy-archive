@@ -1,8 +1,12 @@
 # Ivy Archive — System Design
 
-**Status:** Draft (editor pass)  
-**Date:** 2026-06-20  
+**Status:** Partially implemented — sweep / collect / push / miso / query / status are
+built and live (skill v2.0); groom / conclude remain designed-only.  
+**Date:** 2026-06-20 · **Updated:** 2026-06-23 (implementation pass)  
 **Author:** Dave Holmes-Kinsella · **Editor:** Claude
+
+> See [Implementation Status](#implementation-status) for the built-vs-designed split and
+> [Build Log](#build-log) for what changed on each pass.
 
 > **Editorial convention:** review commentary is added inline as
 > `> **Editor:** …` blockquotes. The author's text is left intact; editor
@@ -25,18 +29,44 @@ in a working session with full context restored.
 ```
 [session] → save context → .scratch/[file].md
                                   ↓
-                           ivy sweep (stamp)
+                           ivy sweep (stamp)                          ✅ built
                                   ↓
-                           ivy collect → ~/Documents/dev/ivy-archive-private/ (git repo)
+                           ivy collect → ~/Documents/dev/ivy-archive-private/
+                                         snapshots/<repo>/ (git repo) ✅ built
                                   ↓
-                           ivy groom  → merge duplicates within git repo
+                           ivy groom  → merge duplicates              ⬜ designed-only
                                   ↓
-                           ivy push   → git remote (GitHub private) + NotebookLM
+                           ivy push   → git remote + NotebookLM       ✅ built
                                   ↓
                         [work concludes]
                                   ↓
-                           ivy conclude → summary → concluded/ → push both destinations
+                           ivy conclude → summary → concluded/        ⬜ designed-only
+
+   ivy miso = sweep → collect → push, one command                    ✅ built
 ```
+
+---
+
+## Implementation Status
+
+| Mode | State | Notes |
+|------|-------|-------|
+| `sweep` | ✅ built | stamps `.scratch` files in place |
+| `collect` | ✅ built | copies into `snapshots/<repo>/` with provenance header; idempotent |
+| `push` | ✅ built | `git push` + NotebookLM `source_add` |
+| `miso` | ✅ built | **new** — runs sweep → collect → push end-to-end |
+| `status` | ✅ built | sync-state check on the current session's snapshot |
+| `query` | ✅ built | local grep (recency-ranked) + `--nlm` semantic |
+| `groom` | ⬜ designed-only | merge duplicate snapshots — see [Modes](#ivy-groom--designed-only) |
+| `conclude` | ⬜ designed-only | summarize + archive a finished work stream |
+| auto-snapshot per session | ⬜ backlog | "ask 0" — `Stop` hook; tracked in `TODO.md` |
+
+**Dropped (considered 2026-06-23, decided against):** a NotebookLM source-count cap with
+rollover to a second notebook, and a meta-catalog mapping notebooks → contents. The single
+append-only notebook stands until it actually approaches the source limit.
+
+The skill itself lives at `~/.claude/skills/ivy-archive/SKILL.md` (v2.0) and is the source
+of truth for runnable behavior; this doc is the architectural rationale.
 
 ---
 
@@ -72,34 +102,53 @@ Description: [one-line summary, max 12 words]
 <!-- Swept: 2026-06-20T18:36:44Z | Pushed-to-ivy: never -->
 ```
 
+> **Gotcha (fixed 2026-06-23):** when extracting or rewriting the `Pushed-to-ivy` value,
+> never use a regex character class that excludes `-` (e.g. `[^>-]*`). ISO timestamps
+> contain hyphens, so it truncates `2026-06-23T…` to `2026` and corrupts the stamp. Use
+> `Pushed-to-ivy: \(.*\) -->` to capture the whole value, and treat any non-ISO value
+> (`never`, or a corrupt `2026`) as "needs pushing."
+
 ---
 
 ### 2. Local Git Repo: ivy-archive-private
 
 **Location:** `~/Documents/dev/ivy-archive-private/`
 
-The central collection point. All context files from all repos are copied here,
-organized by repo name. This is a private git repo pushed to a GitHub remote.
+The central collection point. All context files from all repos are copied here under a
+`snapshots/` subdirectory, organized by repo name. This is a private git repo
+(`dhk/ivy-archive-private`) pushed to a GitHub remote. The repo also holds other Ivy
+content (`threads/`, `concepts/`, `maps/`, `registry/`) — collect only writes under
+`snapshots/`.
 
 **Structure:**
 
 ```
 ivy-archive-private/
-  woven/
-    main-context-2026-06-20.md
-    main-context-2026-06-17.md
-    session-context-2026-06-13.md
-  dev/
-    session-context-2026-06-13.md
-  skill-map/
-    skill-map-context.md
-  captains-log/
-    captains-log-2026-06-16.md
-    captains-log-2026-06-12.md
-  concluded/
-    woven-main-CONCLUDED-2026-06-20.md
-    woven-feature-auth-CONCLUDED-2026-05-31.md
+  snapshots/
+    woven/
+      main-context-2026-06-20.md
+      main-context-2026-06-17.md
+      session-context-2026-06-13.md
+    adventures-in-ai/
+      session-context-2026-06-20.md
+      session-context-2026-06-20__wt-intelligent-chatterjee-615944.md   ← worktree
+    dev/
+      session-context-2026-06-13.md
+    captains-log/
+      captains-log-2026-06-16.md
+    concluded/                          ⬜ designed-only (conclude mode)
+      woven-main-CONCLUDED-2026-06-20.md
+  threads/  concepts/  maps/  registry/   ← other Ivy content, untouched by collect
 ```
+
+**Naming rules** (learned the hard way during the 2026-06-23 build — see [Build Log](#build-log)):
+
+- **Repo name = first path segment under `~/Documents/dev/`.** Snapshots that live directly
+  in `~/Documents/dev/.scratch/` (no sub-repo) map to repo name `dev`, *not* `.scratch`.
+- **Worktree files are namespaced.** A git worktree's `.scratch` file shares its basename
+  with the main tree's (e.g. two `session-context-2026-06-20.md`). Collect appends
+  `__wt-<worktree-name>` to the worktree copy so it never overwrites the main one. Without
+  this, collect silently loses data on every run.
 
 **Backlink mechanism — provenance header:**
 
@@ -201,14 +250,20 @@ repo names. The path is embedded in the file.
 - Update `.last-sweep` timestamp
 - No git, no NLM calls
 
-### `ivy collect`
+### `ivy collect` ✅ built
 
-- Copy `.scratch` files and captain's logs into `~/Documents/dev/ivy-archive-private/`
-- **Prepend provenance header** to each collected file
-- `git add -A && git commit -m "ivy collect — YYYY-MM-DD HH:MM PST"`
-- On first run: `git init`, prompt for GitHub remote URL, save to config
+- Copy `.scratch` files and captain's logs into
+  `~/Documents/dev/ivy-archive-private/snapshots/<repo>/` (see [Naming rules](#2-local-git-repo-ivy-archive-private))
+- **Prepend a fresh provenance header** to each collected snapshot — strip any existing
+  `<!-- ivy-provenance -->` block first so re-collecting never double-prepends, and
+  re-derive `git_remote`/`branch` rather than trusting a prior header. Captain's logs get
+  no header (append-only journals).
+- `git add -A && git commit -m "ivy collect — YYYY-MM-DD HH:MM TZ"`
+- Idempotent — safe to run repeatedly; git only commits real diffs.
+- On first run: read/create config; if the repo or remote is missing, offer
+  `gh repo create dhk/ivy-archive-private --private` (ask first — outward-facing).
 
-### `ivy groom`
+### `ivy groom` ⬜ designed-only
 
 Operates within `~/Documents/dev/ivy-archive-private/`.
 
@@ -234,23 +289,42 @@ Operates within `~/Documents/dev/ivy-archive-private/`.
 >   deleting, at least until the merge logic is trusted. Git history alone is not a
 >   friendly recovery path for an accidental bad merge.
 
-### `push to ivy`
+### `push to ivy` ✅ built
 
-Two destinations:
+Two destinations. Order matters: do NotebookLM first (it mutates stamps in the collected
+copies), then make one git commit + push so the stamp updates ride along.
 
-**A. Git remote:**
+**A. NotebookLM:**
+- Scan `snapshots/**/*.md` for a `Pushed-to-ivy` value that is `never` or non-ISO (a
+  corrupt `2026` counts as not-pushed). The mtime-staleness test from `status` does **not**
+  apply here — collect rewrites mtimes, so the stamp value is the only reliable signal.
+- Add each via `mcp__notebooklm__source_add` (file source). A duplicate-title rejection is
+  treated as success — it's already there.
+- Update the stamp **in the collected copy**: `Pushed-to-ivy: [timestamp]`.
+- Captain's logs have no inline stamp — track them with `.last-nlm-push`.
+
+**B. Git remote:**
 
 ```bash
+git -C ~/Documents/dev/ivy-archive-private add -A
+git -C ~/Documents/dev/ivy-archive-private commit -m "ivy push — NLM stamps …"
 git -C ~/Documents/dev/ivy-archive-private push origin main
 ```
 
-**B. NotebookLM:**
-- Scan files in `ivy-archive-private/` for `Pushed-to-ivy: never` or stale stamp
-- Add each via `mcp__notebooklm__source_add`
-- Update stamp: `Pushed-to-ivy: [timestamp]`
-- Commit stamp updates
+If the remote has diverged (it's shared), `git pull --rebase` then push. Report the exact
+git error on failure; never retry blind.
 
-### `ivy conclude [repo]`
+### `ivy miso` ✅ built
+
+> *Miso: everything goes in the soup.*
+
+One command runs the whole pipeline — `sweep → collect → push (git + NLM)` — suppressing
+each stage's intermediate "what next?" prompt and printing a single combined report. If a
+stage fails, stop there, report what completed and the exact error, and do not mark later
+stages done. Miso is the answer to the "should collect auto-run after sweep?" open question:
+keep the modes separate *and* offer one fused command, rather than coupling their cadence.
+
+### `ivy conclude [repo]` ⬜ designed-only
 
 Mark a work stream complete.
 
@@ -287,9 +361,10 @@ Two backends:
 
 **Local grep (default):**
 - Keywords extracted from question
-- `grep -ril` across `ivy-archive-private/**/*.md`
+- `grep -ril` across `ivy-archive-private/snapshots/**/*.md`
 - Read provenance header from matches → extract repo_path, branch, source_path
-- Return navigation-ready answer
+- **Sort by `Generated:` descending, return the top 1–2** (recency bias, per the editor
+  note below — implemented)
 
 > **Editor:** Keyword grep across all `.md` will get noisy fast, and the design
 > doesn't say how to rank. For the dominant "what was I working on?" case, bias hard
@@ -309,12 +384,16 @@ Two backends:
 `~/.claude/skills/ivy-archive/config`
 
 ```
-local_repo=~/Documents/dev/ivy-archive-private
-remote_url=git@github.com:dhk/ivy-archive-private.git
+local_repo=/Users/dhk/Documents/dev/ivy-archive-private
+remote_url=https://github.com/dhk/ivy-archive-private.git
+remote_branch=main
+collect_subdir=snapshots
 ```
 
-Created on first `ivy collect`. Skill reads this at the start of any mode that touches
-the git repo.
+Read at the start of any mode that touches the git repo. `collect_subdir` keeps collected
+snapshots under `snapshots/` so they don't mix with the repo's other Ivy content;
+`remote_branch` is the push target. (Created on first `ivy collect`; pre-seeded here since
+the repo and remote already existed.)
 
 ---
 
@@ -323,8 +402,9 @@ the git repo.
 | File | Purpose |
 |------|---------|
 | `~/.claude/skills/ivy-archive/.last-sweep` | Timestamp of last local sweep |
+| `~/.claude/skills/ivy-archive/.last-collect` | Timestamp of last collect (for captain's-log newness) |
 | `~/.claude/skills/ivy-archive/.last-nlm-push` | Timestamp of last NLM push (for captain's logs, which aren't stamped inline) |
-| `~/.claude/skills/ivy-archive/config` | local_repo path + git remote URL |
+| `~/.claude/skills/ivy-archive/config` | local_repo, remote_url, remote_branch, collect_subdir |
 
 ---
 
@@ -334,8 +414,9 @@ the git repo.
 |--------|------|
 | "sweep archive", "ivy sweep" | Sweep |
 | "ivy collect", "collect to ivy" | Collect |
-| "ivy groom", "groom ivy" | Groom |
+| "ivy groom", "groom ivy" | Groom ⬜ |
 | "push to ivy", "flush to ivy" | Push |
+| "miso", "ivy everything", "do everything" | Miso |
 | "ivy conclude [repo]", "wrap up [repo]", "mark this done" | Conclude |
 | "is my context synced?", "ivy status", "sync status" | Sync Status Check |
 | "what was I working on", "what branches are active on", "where did I work on X", "ivy, ..." | Query |
@@ -363,8 +444,11 @@ sweep archive        ← optional, stamps immediately
 **Weekly maintenance:**
 
 ```
+miso                 ← sweep + collect + push, one command (the usual path)
+
+# or run the stages by hand:
 ivy collect          ← gathers everything into git repo
-ivy groom            ← merges duplicates
+ivy groom            ← merges duplicates  (⬜ not yet built)
 push to ivy          ← git push + NLM update
 ```
 
@@ -378,7 +462,9 @@ ivy conclude woven   ← generates summary, archives, pushes
 
 ## Open Questions
 
-- Should `ivy collect` run automatically after `sweep archive` (combined command)?
+- ~~Should `ivy collect` run automatically after `sweep archive` (combined command)?~~
+  **Resolved 2026-06-23:** modes stay separate; `miso` provides the fused one-command path
+  without coupling their cadence. (Original editor note below for context.)
   > **Editor:** Keep them separate, but add a `sweep --collect` convenience flag.
   > Sweep is the cheap, frequent, end-of-session action; collect touches git and
   > belongs to weekly maintenance. Auto-fusing means every sweep makes a commit and
@@ -392,3 +478,39 @@ ivy conclude woven   ← generates summary, archives, pushes
   > now? [y/N]` and run `gh repo create --private` on yes, else ask for an existing
   > URL. Don't silently create (it's an outward-facing action), but don't force
   > manual setup either.
+
+---
+
+## Build Log
+
+A running record of how the design moved from paper to working skill. Newest first.
+
+### 2026-06-23 — Implementation pass (skill v1.1 → v2.0)
+
+**Built:** `collect`, the git-remote half of `push`, and a new `miso` mode (sweep →
+collect → push in one command). Query gained recency ranking and now reads the collection
+repo. Config gained `remote_branch` + `collect_subdir`. Ran `miso` live: collected 20
+snapshots across 10 repos + 11 captain's logs into `snapshots/`, pushed 26 sources to
+NotebookLM and the commits to `dhk/ivy-archive-private`.
+
+**Four bugs the live run surfaced (all fixed in the skill):**
+
+1. **`.scratch` mistaken for a repo** — snapshots directly under `~/Documents/dev/.scratch/`
+   landed in a folder literally named `.scratch`. Now mapped to `dev`.
+2. **Worktree basename collisions** — a worktree and the main tree both had
+   `session-context-2026-06-20.md`; one silently overwrote the other (20 sources → 19
+   files). Worktree copies are now namespaced `__wt-<name>`.
+3. **Hyphen-truncated timestamps** — a `[^>-]*` regex excluded `-`, truncating ISO
+   timestamps to `2026` and corrupting the `Pushed-to-ivy` stamp (this is the origin of the
+   stray `Pushed-to-ivy: 2026` seen on a woven snapshot). Fixed in sweep and push.
+4. **zsh vs bash** — collect/push loops use bash (`mapfile` is unavailable in zsh); run them
+   under `bash` explicitly.
+
+**Decisions:** dropped the NotebookLM source-cap + rollover and the notebook meta-catalog
+(asks 4 & 5). Deferred auto-snapshot-per-session (ask 0) to `TODO.md`. `groom` and
+`conclude` remain designed-only.
+
+### 2026-06-20 — Design drafted
+
+Initial system design (PR #3) and editor pass: the three-tier sweep → collect → push
+pipeline, the provenance-header backlink mechanism, and the `groom` / `conclude` modes.
