@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A newer push to the same branch makes the older run irrelevant.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      # No dependency install step exists because none is needed: every module
+      # under scripts/ imports only the standard library (csv, os, re, sys,
+      # datetime) plus its own sibling ivy_lib. If that ever stops being true,
+      # this workflow needs a requirements file before the steps below will run.
+
+      # There are no unit tests, so this is the floor: it parses every .py
+      # without importing it, which catches syntax breakage introduced by an
+      # edit that was never actually executed.
+      - name: Byte-compile Python
+        run: python -m compileall -q .
+
+      # The repo's real invariant is not its code, it is its content: every
+      # snapshot/concept/artifact/map has required frontmatter, an ID matching
+      # its folder, a filename matching the dated schema, and cross-references
+      # that resolve. scripts/validate.py already encodes all of that and exits
+      # non-zero on failure, so CI runs the check the repo wrote for itself.
+      # This is what stops a hand-written snapshot from silently rotting.
+      - name: Validate archive content
+        run: python scripts/validate.py
+
+      # registry/*.csv is generated from the frontmatter, but it is committed,
+      # so it can drift the moment someone adds a snapshot without rerunning
+      # the builder — and a stale registry is invisible until something reads
+      # it. Regenerating and diffing turns that drift into a failed check.
+      - name: Check registry is up to date
+        run: |
+          python scripts/build_registry.py
+          git diff --exit-code -- registry/ \
+            || { echo "::error::registry/ is out of date. Run 'python scripts/build_registry.py' and commit the result."; exit 1; }
